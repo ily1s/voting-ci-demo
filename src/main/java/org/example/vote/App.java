@@ -8,43 +8,77 @@ import org.example.vote.strategy.CountingStrategy;
 import org.example.vote.strategy.PluralityCountingStrategy;
 
 import java.util.Map;
+import java.util.Scanner;
 
 public class App {
 
     public static void main(String[] args) {
 
-        // 1️⃣ Choix du repository (Factory)
+        // Repository via Factory
         var repo = RepositoryFactory.createRepo("memory");
 
-        // 2️⃣ Service
+        // Service
         VoteService service = new VoteService(repo);
 
-        // 3️⃣ Observer (notification)
+        // Observer
         service.addListener(new LoggingVoteListener());
 
-        // 4️⃣ Enregistrement de votes (simulation CLI)
-        service.cast(new Vote("v1", "Alice", System.currentTimeMillis()));
-        service.cast(new Vote("v2", "Alice", System.currentTimeMillis()));
-        service.cast(new Vote("v3", "Bob", System.currentTimeMillis()));
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Welcome to VotingApp!");
+        System.out.println("Commands: vote | count | reset | exit");
 
-        // 5️⃣ Choix stratégie par argument CLI
-        CountingStrategy strategy = chooseStrategy(args);
+        while (true) {
+            String cmd = sc.nextLine().trim().toLowerCase();
 
-        // 6️⃣ Calcul des résultats
-        Map<String, Integer> results = service.count(strategy);
+            switch (cmd) {
 
-        // 7️⃣ Affichage résultats
-        System.out.println("=== RESULTS ===");
-        results.forEach((candidate, count) ->
-                System.out.println(candidate + " : " + count));
+                case "vote" -> {
+                    System.out.println("Enter voter name:");
+                    String voter = sc.nextLine();
+
+                    System.out.println("Enter candidate:");
+                    String candidate = sc.nextLine();
+
+                    service.cast(new Vote(
+                            voter,
+                            candidate,
+                            System.currentTimeMillis()
+                    ));
+                }
+
+                case "count" -> {
+                    CountingStrategy strategy =
+                            chooseStrategy(args);
+
+                    Map<String, Integer> results =
+                            service.count(strategy);
+
+                    System.out.println("=== RESULTS ===");
+                    results.forEach((c, v) ->
+                            System.out.println(c + " => " + v));
+                }
+
+                case "reset" -> {
+                    service.reset();
+                    System.out.println("Reset done");
+                }
+
+                case "exit" -> {
+                    System.out.println("Bye!");
+                    sc.close();
+                    return;
+                }
+
+                default -> System.out.println("Unknown command");
+            }
+        }
     }
 
     private static CountingStrategy chooseStrategy(String[] args) {
-        if (args.length > 0 && args[0].equalsIgnoreCase("plurality")) {
+        if (args.length > 0 &&
+                args[0].equalsIgnoreCase("plurality")) {
             return new PluralityCountingStrategy();
         }
-
-        // default
-        return new PluralityCountingStrategy();
+        return new PluralityCountingStrategy(); // default
     }
 }
