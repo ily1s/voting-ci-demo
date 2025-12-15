@@ -22,4 +22,15 @@ public class VoteServiceTest {
         assertEquals(2, res.get("Alice"));
         assertEquals(1, res.get("Bob"));
     }
+
+    @Test
+    void testResetClearsVotes() {
+        InMemoryVoteRepository repo = new InMemoryVoteRepository();
+        VoteService service = new VoteService(repo);
+
+        service.cast(new Vote("v1", "Alice", System.currentTimeMillis()));
+        service.reset();
+
+        assertTrue(service.count(new PluralityCountingStrategy()).isEmpty());
+    }
 }
