@@ -37,12 +37,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar') {
-                    sh [
-                        'mvn', '-B', 'sonar:sonar',
-                        "-Dsonar.projectKey=voting-ci-demo",
-                        "-Dsonar.host.url=${SONAR_HOST_URL}",
-                        "-Dsonar.login=${SONAR_TOKEN}"
-                    ]
+                    sh "mvn -B sonar:sonar -Dsonar.projectKey=voting-ci-demo -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_TOKEN}"
                 }
             }
         }
